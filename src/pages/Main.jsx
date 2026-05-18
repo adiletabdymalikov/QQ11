@@ -3,12 +3,9 @@ import { useEffect, useState } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom"; 
 
 function Main() {
-   
     const [notes, setNotes] = useState([]);
-    const [appointment, setAppointment] = useState({ date: '', time: '', service: 'Выбранное блюдо' });
     const [currentUser, setCurrentUser] = useState(null);
     const navigate = useNavigate();
-    const location = useLocation(); 
 
     const API_URL = 'https://6a01fa240d92f63dd25323c7.mockapi.io/t/ad';
 
@@ -19,15 +16,8 @@ function Main() {
         } else {
             setCurrentUser(session);
             fetchNotes(session);
-            
-           
-            if (location.state?.serviceName) {
-                setAppointment(prev => ({ ...prev, service: location.state.serviceName }));
-            }
         }
-    }, [navigate, location]);
-
-  
+    }, [navigate]);
     const fetchNotes = async (username) => {
         try {
             const response = await axios.get(API_URL);
@@ -35,27 +25,9 @@ function Main() {
                 const myNotes = response.data.filter(note => note.username === username);
                 setNotes(myNotes);
             }
-        } catch (error) { console.error(error); }
-    }
-
-    
-    const postAppointment = async (e) => {
-        e.preventDefault();
-        if (!appointment.date || !appointment.time) return alert("Выберите дату и время доставки!");
-        try {
-            const response = await axios.post(API_URL, {
-                heading: `Заказ: ${appointment.service}`,
-                description: `Доставка на: ${appointment.date} в ${appointment.time}`,
-                username: currentUser,
-                date: appointment.date,
-                time: appointment.time
-            });
-            if (response.status === 201 || response.status === 200) {
-                alert("Заказ успешно оформлен!");
-                setAppointment({ date: '', time: '', service: 'Выбранное блюдо' });
-                fetchNotes(currentUser);
-            }
-        } catch (error) { console.error(error); }
+        } catch (error) { 
+            console.error("Ошибка при получении данных с сервера:", error); 
+        }
     }
 
     const handleLogout = () => {
@@ -63,97 +35,147 @@ function Main() {
         navigate('/login');
     };
 
+    
+    const colors = {
+        bg: "#fbf9f4",       
+        primary: "#2e5b3f",  
+        textDark: "#2c3e2e", 
+        orange: "#e97a4d",   
+        lightBg: "#f5f2eb",  
+    };
+
     return (
-        <div style={{ backgroundColor: "#fdfaf5", minHeight: "100vh", padding: "40px 20px" }}>
-            <div className="container" style={{ maxWidth: '700px', margin: '0 auto' }}>
-                
-             
-                <div className="d-flex justify-content-between align-items-center mb-5">
+        <div style={{ backgroundColor: colors.bg, minHeight: "100vh", fontFamily: "system-ui, sans-serif", paddingBottom: "60px" }}>
+            
+          
+            <header className="bg-white shadow-sm mb-5" style={{ borderBottom: "1px solid #eae6df" }}>
+                <div className="container-fluid d-flex justify-content-between align-items-center py-3 px-4" style={{ maxWidth: "1200px", margin: "0 auto" }}>
+                    <div className="d-flex align-items-center gap-3">
+                        <div style={{ backgroundColor: colors.primary, color: "#fff", width: "45px", height: "45px", borderRadius: "12px", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold", fontSize: "20px" }}>
+                            У
+                        </div>
+                        <div>
+                            <h3 className="m-0" style={{ fontWeight: "700", color: colors.primary, fontSize: "22px" }}>UniGrade</h3>
+                            <small className="text-muted" style={{ fontSize: "12px" }}>Система управления успеваемостью</small>
+                        </div>
+                    </div>
+                    
+                  
+                    {currentUser && (
+                        <div className="d-flex align-items-center gap-3 bg-white p-2 px-3 border" style={{ borderRadius: "16px" }}>
+                            <div style={{ backgroundColor: "#e8f0eb", color: colors.primary, width: "36px", height: "36px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold", fontSize: "14px" }}>
+                                {currentUser.substring(0, 2).toUpperCase()}
+                            </div>
+                            <div className="text-start" style={{ lineHeight: "1.2" }}>
+                                <div style={{ fontWeight: "600", fontSize: "14px", color: colors.textDark }}>{currentUser}</div>
+                                <small className="text-muted" style={{ fontSize: "11px" }}>Студент • Группа CS-401</small>
+                            </div>
+                            <button onClick={handleLogout} className="btn btn-sm btn-link text-danger p-0 ms-2" style={{ fontSize: "13px", textDecoration: "none" }}>Выйти</button>
+                        </div>
+                    )}
+                </div>
+            </header>
+
+            
+            <div className="container px-4" style={{ maxWidth: "1200px", margin: "0 auto" }}>
+                <div className="d-flex justify-content-between align-items-center mb-4">
                     <div>
-                        <h2 style={{ fontFamily: 'Playfair Display', fontWeight: 'bold' }}>Bella <span style={{color: '#c5a059'}}>Ristorante</span></h2>
-                        {currentUser && <small className="text-muted">Аккаунт: <b>{currentUser}</b></small>}
+                        <h2 className="fw-bold m-0" style={{ color: colors.textDark }}>Личный кабинет студента</h2>
+                        <p className="text-muted m-0">Здесь отображаются отправленные вами решения и задания.</p>
                     </div>
-                    <div className="d-flex gap-2">
-                        <Link to="/products" className="btn btn-sm btn-outline-dark rounded-pill px-3">Вернуться в меню</Link>
-                        <button onClick={handleLogout} className="btn btn-sm btn-danger rounded-pill px-3">Выйти</button>
-                    </div>
+                    <Link to="/products" className="btn text-white px-4 rounded-pill fw-bold" style={{ backgroundColor: colors.primary, fontSize: "14px" }}>
+                        Перейти к предметам →
+                    </Link>
                 </div>
 
               
-                <div className="card p-4 shadow-sm mb-5" style={{ borderRadius: '25px', border: 'none', background: '#fff' }}>
-                    <h4 className="mb-4" style={{ fontWeight: 'bold' }}>Оформление заказа</h4>
-                    <form onSubmit={postAppointment}>
-                        <div className="mb-3">
-                            <label className="form-label small fw-bold text-uppercase" style={{ letterSpacing: '1px' }}>Блюдо</label>
-                            <input 
-                                type="text" 
-                                className="form-control form-control-lg bg-light" 
-                                style={{ borderRadius: '12px', border: 'none' }}
-                                value={appointment.service} 
-                                onChange={(e) => setAppointment({...appointment, service: e.target.value})}
-                            />
-                        </div>
-                        
-                        <div className="row">
-                            <div className="col-md-6 mb-3">
-                                <label className="form-label small fw-bold text-uppercase">Дата доставки</label>
-                                <input 
-                                    type="date" 
-                                    className="form-control form-control-lg" 
-                                    style={{ borderRadius: '12px' }}
-                                    value={appointment.date} 
-                                    onChange={(e) => setAppointment({ ...appointment, date: e.target.value })} 
-                                    required 
-                                />
-                            </div>
-                            <div className="col-md-6 mb-3">
-                                <label className="form-label small fw-bold text-uppercase">Время</label>
-                                <input 
-                                    type="time" 
-                                    className="form-control form-control-lg" 
-                                    style={{ borderRadius: '12px' }}
-                                    value={appointment.time} 
-                                    onChange={(e) => setAppointment({ ...appointment, time: e.target.value })} 
-                                    required 
-                                />
-                            </div>
-                        </div>
-                        
-                        <button type="submit" className="btn btn-dark w-100 fw-bold py-3 mt-3 shadow" style={{ borderRadius: '15px', backgroundColor: '#1a1a1a' }}>
-                            ПОДТВЕРДИТЬ ЗАКАЗ
-                        </button>
-                    </form>
-                </div>
-
-               
-                <div className="history">
-                    <h5 className="mb-4" style={{ fontWeight: 'bold', display: 'flex', alignItems: 'center' }}>
-                        <span style={{ width: '30px', height: '2px', background: '#c5a059', marginRight: '10px' }}></span>
-                        История ваших заказов
+                <div className="mb-4 mt-5">
+                    <h5 className="mb-4" style={{ fontWeight: "700", color: colors.textDark, display: "flex", alignItems: "center", gap: "10px" }}>
+                        <span style={{ width: "4px", height: "20px", background: colors.primary, borderRadius: "10px" }}></span>
+                        История ваших ответов и решений
                     </h5>
-                    
+
                     {notes.length > 0 ? (
-                        <div className="row g-3">
-                            {notes.slice().reverse().map((item) => (
-                                <div className="col-12" key={item.id}>
-                                    <div className="card p-3 shadow-sm" style={{ borderRadius: '15px', border: 'none', borderLeft: '6px solid #c5a059' }}>
-                                        <div className="d-flex justify-content-between align-items-center">
-                                            <div>
-                                                <div className="fw-bold fs-5" style={{ color: '#1a1a1a' }}>{item.heading}</div>
-                                                <div className="text-muted small">{item.description}</div>
+                        <div className="row g-4">
+                            {notes.slice().reverse().map((item, index) => (
+                                <div className="col-md-4" key={item.id || index}>
+                               
+                                    <div className="card h-100 shadow-sm" style={{ borderRadius: "20px", overflow: "hidden", border: "1px solid #eae6df", background: "#fff" }}>
+                                 
+                                        <div style={{ backgroundColor: colors.primary, padding: "24px 20px", color: "#fff", position: "relative" }}>
+                                            <h5 className="m-0 text-truncate" style={{ fontWeight: "700", fontSize: "18px", paddingRight: "25px" }}>
+                                                {item.heading || "Учебная дисциплина"}
+                                            </h5>
+                                            <span style={{ fontSize: "12px", opacity: "0.8", display: "block", marginTop: "4px" }}>
+                                                📚 Проверка преподавателем
+                                            </span>
+                                            <span style={{ position: "absolute", top: "24px", right: "20px", color: "#f3cc7d", fontSize: "18px" }}>★</span>
+                                        </div>
+
+                                     
+                                        <div className="card-body p-4 d-flex flex-column justify-content-between" style={{ minHeight: "200px" }}>
+                                    
+                                            <div className="mb-3">
+                                                <span className="badge" style={{ backgroundColor: colors.bg, color: "#7c7569", padding: "6px 12px", borderRadius: "8px", fontSize: "12px", fontWeight: "600" }}>
+                                                    Лабораторная работа
+                                                </span>
                                             </div>
-                                            <span className="badge bg-light text-dark border rounded-pill px-3 py-2">Готовится</span>
+
+                                           
+                                            <div className="d-flex align-items-center gap-3 my-2">
+                                              
+                                                <div style={{ 
+                                                    width: "56px", 
+                                                    height: "56px", 
+                                                    borderRadius: "50%", 
+                                                    backgroundColor: "#fbeee7", 
+                                                    color: colors.orange, 
+                                                    display: "flex", 
+                                                    alignItems: "center", 
+                                                    justifyContent: "center", 
+                                                    fontWeight: "700", 
+                                                    fontSize: "15px",
+                                                    border: `1px solid ${colors.orange}`
+                                                }}>
+                                                    Проверка
+                                                </div>
+                                                <div>
+                                                    <div style={{ fontSize: "11px", textTransform: "uppercase", color: "#a0988d", fontWeight: "700", letterSpacing: "0.5px" }}>Статус работы</div>
+                                                    <div style={{ fontWeight: "700", color: "#4fa76c", fontSize: "15px" }}>
+                                                        ✓ На проверке
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="mt-3 pt-3" style={{ borderTop: "1px dashed #eae6df", fontSize: "13px" }}>
+                                                <div className="mb-2">
+                                                    <span className="text-muted d-block mb-1">📝 Ваш ответ:</span>
+                                                    <div className="p-2 bg-light rounded text-dark fw-semibold" style={{ wordBreak: "break-word", fontSize: "12px" }}>
+                                                        {item.description || "Решение не найдено"}
+                                                    </div>
+                                                </div>
+                                                <div className="d-flex justify-content-between mt-2 pt-1" style={{ fontSize: "11px", color: "#a0988d" }}>
+                                                    <span>📅 Дата: {item.date || "--.--.----"}</span>
+                                                    <span>⏱ Время: {item.time || "--:--"}</span>
+                                                </div>
+                                            </div>
+
                                         </div>
                                     </div>
+
                                 </div>
                             ))}
                         </div>
                     ) : (
-                        <div className="text-center p-5 bg-white shadow-sm" style={{ borderRadius: '20px' }}>
-                            <p className="text-muted mb-0">У вас пока нет активных заказов.</p>
+                        <div className="text-center p-5 bg-white" style={{ borderRadius: "20px", border: "1px solid #eae6df" }}>
+                            <p className="text-muted mb-0">Вы еще не отправили ни одного решения. Перейдите во вкладку предметов.</p>
                         </div>
                     )}
                 </div>
+                <footer className="text-center mt-5 pt-4" style={{ borderTop: "1px solid #eae6df", color: "#a0988d", fontSize: "12px" }}>
+                    © 2026 UniGrade. Панель мониторинга успеваемости студента.
+                </footer>
+
             </div>
         </div>
     );
