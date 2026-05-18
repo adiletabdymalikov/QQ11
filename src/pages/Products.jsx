@@ -130,7 +130,7 @@ const Products = () => {
                         style={{ backgroundColor: selectedSemester === 0 ? colors.primary : '#fff' }}
                         onClick={() => setSelectedSemester(0)}
                     >
-                        Все семестры
+                    
                     </button>
                     {categories.map(cat => (
                         <button 
@@ -212,7 +212,7 @@ const Products = () => {
                         ))
                     ) : (
                         <div className="col-12 text-center py-5">
-                            <p className="text-muted">Нет предметов в выбранном семестре.</p>
+                            <p className="text-muted">Нет предметов в выбранном семе.</p>
                         </div>
                     )}
                 </div>
